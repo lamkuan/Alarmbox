@@ -29,15 +29,7 @@ func (a *App) startup(ctx context.Context) {
 func (a *App) Run() (err error) {
 	if !serial.IsPortNil() {
 		err = execute.Run()
-
-		//if err != nil {
-		//	message = "啟動成功"
-		//} else {
-		//	message = "啟動失敗"
-		//}
-
 	} else {
-		//message = "沒有串口綁定"
 		err = errors.New("沒有串口綁定")
 	}
 
@@ -48,12 +40,6 @@ func (a *App) Bind(name string) (err error) {
 	config.Name = name
 
 	err = serial.InitPort()
-
-	//if err = serial.InitPort(); err != nil {
-	//	//message = "串口綁定失敗"
-	//} else {
-	//	//message = "串口綁定成功"
-	//}
 
 	return
 }

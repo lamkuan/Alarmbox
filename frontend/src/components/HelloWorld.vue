@@ -9,19 +9,26 @@ const data = reactive({
   active: false,
 })
 
-
 function run() {
 
   let message = ""
 
+  if (data.active) {
+    message = "Alarmbox 已經啟動"
+    ShowMessageDialog("Error", message)
+    return
+  }
+
   Run()
   .then(() => {
     message = "啟動成功"
+    data.active = true
     ShowMessageDialog("Success", message)
   })
   .catch((err) => {
-    message = "啟動失敗"
-    ShowMessageDialog("Success", message)
+    message = "啟動失敗: " + err.toString()
+    data.active = false
+    ShowMessageDialog("Error", message)
   })
 }
 
@@ -29,14 +36,22 @@ function bind() {
 
   let message = ""
 
+  if (data.bind) {
+    message = "串口已綁定成功"
+    ShowMessageDialog("Error", message)
+    return
+  }
+
   Bind(data.port)
   .then(() => {
     message = "串口綁定成功"
+    data.bind = true
     ShowMessageDialog("Success", message)
 
   })
   .catch((err) => {
     message = "串口綁定失敗"
+    data.bind = false
     ShowMessageDialog("Error", message)
   })
 }

@@ -20,10 +20,16 @@ func Run() (err error) {
 
 	exit := make(chan []byte)
 
+	exitFunction := func() {
+		close(c)
+		close(exit)
+	}
+
 	go func() {
 		for {
 			select {
 			case <-exit:
+				exitFunction()
 				return
 			default:
 				time.Sleep(5 * time.Second)
@@ -46,7 +52,7 @@ func Run() (err error) {
 			err = serial.Write(serialCode)
 
 			if err != nil {
-				close(exit)
+				exitFunction()
 				return
 			}
 		}
@@ -106,12 +112,22 @@ func test(requester *adwan.Requester, c chan []byte) (err error) {
 		}
 
 		if usrAckType == 0 && recoverType == 0 {
-			log.Print("告警!")
+			log.Print("告警: 未確認且未恢復")
 			switch severity {
 			case adwan.Exigency:
 				c <- serial.ExigencyOn
 			case adwan.Importance:
 				c <- serial.ImportanceOn
+			default:
+				c <- serial.SecondaryOn
+			}
+		} else if usrAckType != 0 && recoverType == 0 {
+			log.Print("告警!")
+			switch severity {
+			case adwan.Exigency:
+				c <- serial.ExigencyOnButAck
+			case adwan.Importance:
+				c <- serial.ImportanceOnButAck
 			default:
 				c <- serial.SecondaryOn
 			}
