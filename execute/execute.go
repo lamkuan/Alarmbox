@@ -3,13 +3,15 @@ package execute
 import (
 	"errors"
 	"log"
+	"sync"
 	"time"
+	"wails/config"
 	"wails/lib/adwan"
 	"wails/lib/serial"
 )
 
 func Run() (err error) {
-	requester, err := adwan.NewRequester(adwan.Username, adwan.Password, adwan.IP)
+	requester, err := adwan.NewRequester(config.Username, config.Password, config.IP)
 
 	if err != nil {
 		log.Println(err)
@@ -20,9 +22,31 @@ func Run() (err error) {
 
 	exit := make(chan []byte)
 
-	exitFunction := func() {
-		close(c)
-		close(exit)
+	isExit := false
+	isChannelClose := false
+
+	var mu sync.Mutex
+
+	closeChannel := func() {
+		mu.Lock()
+		defer mu.Unlock()
+		if !isChannelClose {
+			close(c)
+		}
+	}
+
+	closeExit := func() {
+		mu.Lock()
+		defer mu.Unlock()
+
+		if !isExit {
+			close(exit)
+		}
+	}
+
+	closeAll := func() {
+		closeChannel()
+		closeExit()
 	}
 
 	go func() {
@@ -32,15 +56,15 @@ func Run() (err error) {
 		for {
 			select {
 			case <-exit:
-				exitFunction()
+				closeAll()
 				return
 			default:
 				if err != nil {
-					close(c)
+					closeAll()
 					return
 				}
 
-				time.Sleep(1 * time.Second)
+				time.Sleep(5 * time.Second)
 				c <- serial.GlobalOff // 清除所有狀態
 			}
 
@@ -52,7 +76,7 @@ func Run() (err error) {
 			err = serial.Write(serialCode)
 
 			if err != nil {
-				exitFunction()
+				closeAll()
 				return
 			}
 		}
@@ -71,7 +95,9 @@ func test(requester *adwan.Requester, c chan []byte, err *error) {
 		for {
 			data, *err = requester.FetchWarningMessage() // 獲取告警的JSON
 
-			if err != nil {
+			time.Sleep(1 * time.Second)
+
+			if *err != nil {
 				close(request)
 				return
 			}

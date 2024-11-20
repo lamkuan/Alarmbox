@@ -5,8 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
-	"wails/config"
 	"wails/execute"
+
+	"wails/config"
 	"wails/lib/serial"
 )
 

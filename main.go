@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"embed"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -26,6 +27,9 @@ func main() {
 		Height: 768,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
+		},
+		OnShutdown: func(ctx context.Context) {
+
 		},
 		BackgroundColour: &options.RGBA{R: 242, G: 245, B: 208, A: 0},
 		OnStartup:        app.startup,

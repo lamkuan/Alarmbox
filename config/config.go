@@ -1,4 +1,4 @@
-package adwan
+package config
 
 const (
 	IP       = "http://100.100.100.214:30000/"
