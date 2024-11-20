@@ -18,35 +18,35 @@ func Run() (err error) {
 		return
 	}
 
-	c := make(chan []byte, 1)
-
-	exit := make(chan []byte)
-
-	isExit := false
-	isChannelClose := false
-
+	c := make(chan []byte)
+	quit := make(chan []byte)
 	var mu sync.Mutex
 
+	isChannelClosed := false
 	closeChannel := func() {
-		mu.Lock()
 		defer mu.Unlock()
-		if !isChannelClose {
+
+		mu.Lock()
+		if !isChannelClosed {
+			isChannelClosed = true
 			close(c)
 		}
 	}
 
-	closeExit := func() {
-		mu.Lock()
+	isQuitChannelClosed := false
+	closeQuitChannel := func() {
 		defer mu.Unlock()
 
-		if !isExit {
-			close(exit)
+		mu.Lock()
+		if !isQuitChannelClosed {
+			isQuitChannelClosed = true
+			close(c)
 		}
 	}
 
 	closeAll := func() {
 		closeChannel()
-		closeExit()
+		closeQuitChannel()
 	}
 
 	go func() {
@@ -55,7 +55,7 @@ func Run() (err error) {
 
 		for {
 			select {
-			case <-exit:
+			case <-quit:
 				closeAll()
 				return
 			default:
@@ -186,6 +186,4 @@ func test(requester *adwan.Requester, c chan []byte, err *error) {
 		}
 
 	}()
-
-	return
 }

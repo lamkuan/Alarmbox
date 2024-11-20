@@ -118,6 +118,10 @@ func (r *Requester) FetchWarningMessage() ([]map[string]interface{}, error) {
 
 	result, err := r.API(uri, http.MethodPost, payload)
 
+	if err != nil {
+		return nil, err
+	}
+
 	payload = map[string]interface{}{
 		"chartDataFlag":  true,
 		"start":          1,
