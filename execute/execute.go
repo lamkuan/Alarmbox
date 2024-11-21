@@ -11,7 +11,7 @@ import (
 )
 
 func Run() (err error) {
-	requester, err := adwan.NewRequester(config.Username, config.Password, config.IP)
+	requester, err := adwan.NewRequester(adwan.Account.Username, adwan.Account.Password, config.IP)
 
 	if err != nil {
 		log.Println(err)

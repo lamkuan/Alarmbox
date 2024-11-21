@@ -13,7 +13,8 @@ func getToken(username, password string, ip string) (string, error) {
 	resp, err := http.Get(url)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return "", err
 	}
 
 	defer resp.Body.Close()
@@ -21,7 +22,8 @@ func getToken(username, password string, ip string) (string, error) {
 	b, err := io.ReadAll(resp.Body)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return "", err
 	}
 
 	var tokenJSON map[string]interface{}

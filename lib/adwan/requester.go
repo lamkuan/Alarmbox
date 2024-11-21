@@ -35,9 +35,6 @@ func NewRequester(username, password, ip string) (Requester, error) {
 func (r *Requester) API(uri, method string, payload map[string]interface{}) (map[string]interface{}, error) {
 	URL, err := url.JoinPath(r.IP, uri)
 
-	//u := url.Values{}
-	//u.Add("{}", "{}")
-
 	if err != nil {
 		return nil, err
 	}

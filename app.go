@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
+	"log"
 	"wails/execute"
+	"wails/lib/adwan"
 
 	"wails/config"
 	"wails/lib/serial"
@@ -27,8 +29,35 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
-func (a *App) shutdown(ctx context.Context) {
+func (a *App) shutdown(_ context.Context) {
+	if !serial.IsPortNil() {
+		_ = serial.Write(serial.GlobalOff)
+	}
+}
 
+func (a *App) Login(username, password string) (err error) {
+
+	if username == "" || password == "" {
+		err = errors.New("用戶名或密碼不能為空")
+		return
+	}
+
+	success, err := adwan.Login(username, password, config.IP)
+
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	if success == false {
+		err = errors.New("登錄失敗： 帳號或密碼錯誤")
+		return
+	}
+
+	adwan.Account.Username = username
+	adwan.Account.Password = password
+
+	return
 }
 
 func (a *App) Run() (err error) {
@@ -49,9 +78,8 @@ func (a *App) Bind(name string) (err error) {
 	return
 }
 
-// 顯示彈窗
 func (a *App) ShowMessageDialog(title, message string) {
-	runtime.MessageDialog(a.ctx, runtime.MessageDialogOptions{
+	_, _ = runtime.MessageDialog(a.ctx, runtime.MessageDialogOptions{
 		Type:    runtime.InfoDialog, // 彈窗類型：Info, Warning, Error 等
 		Title:   title,              // 彈窗標題
 		Message: message,            // 彈窗內容
